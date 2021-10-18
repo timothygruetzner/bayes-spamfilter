@@ -37,7 +37,6 @@ public class Main {
         System.out.println("*            Impl. by Nathanael Weber & Timothy Grützner        *");
         System.out.println("*****************************************************************");
         System.out.println();
-        System.out.println();
 
         System.out.println("Using Configuration:");
         System.out.printf("Alpha:                         %f%n", NaiveBayesImpl.ALPHA);
@@ -56,14 +55,15 @@ public class Main {
                 .map(this.bayesImpl::predict)
                 .filter(p -> p.getType() == Prediction.PredictionType.HAM)
                 .count();
-        System.out.printf("Guessed %d / %d HAM correctly (%f%%)", correctHamGuesses, hamTestfiles.size(), (double)correctHamGuesses/hamTestfiles.size());
+        System.out.printf("Guessed %d / %d HAM correctly (%f%%)%n", correctHamGuesses, hamTestfiles.size(), (double)correctHamGuesses/hamTestfiles.size()*100);
 
-        List<String[]> spamTestfiles = getZipContents(HAM_TEST_SET);
-        long correctSpamGuesses = hamTestfiles.stream()
+        List<String[]> spamTestfiles = getZipContents(SPAM_TEST_SET);
+        System.out.printf("Testing with %d SPAM files...", spamTestfiles.size());
+        long correctSpamGuesses = spamTestfiles.stream()
                 .map(this.bayesImpl::predict)
-                .filter(p -> p.getType() == Prediction.PredictionType.HAM)
+                .filter(p -> p.getType() == Prediction.PredictionType.SPAM)
                 .count();
-        System.out.printf("Guessed %d / %d SPAM correctly (%f%%)", correctSpamGuesses, spamTestfiles.size(), (double)correctSpamGuesses/spamTestfiles.size());
+        System.out.printf("Guessed %d / %d SPAM correctly (%f%%)%n", correctSpamGuesses, spamTestfiles.size(), (double)correctSpamGuesses/spamTestfiles.size()*100);
 
 
     }
