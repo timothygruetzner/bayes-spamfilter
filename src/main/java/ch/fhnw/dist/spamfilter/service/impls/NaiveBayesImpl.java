@@ -6,11 +6,12 @@ import ch.fhnw.dist.spamfilter.service.Prediction;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class NaiveBayesImpl implements NaiveBayes {
-    public final static double α = 0.01;
+    public final static double ALPHA = 0.01;
     public final static double THRESHOLD = 0.1;
 
     Map<String, Double> spamProbabilities = new HashMap<>();
@@ -20,6 +21,9 @@ public class NaiveBayesImpl implements NaiveBayes {
     public void train(String[][] spamTrainingSet, String[][] hamTrainingSet) {
         spamProbabilities = calculateProbabilities(spamTrainingSet);
         hamProbabilities = calculateProbabilities(hamTrainingSet);
+
+        insertAlpha(spamProbabilities.keySet(), hamProbabilities.keySet(), hamProbabilities);
+        insertAlpha(hamProbabilities.keySet(), spamProbabilities.keySet(), spamProbabilities);
     }
 
     @Override
@@ -30,6 +34,11 @@ public class NaiveBayesImpl implements NaiveBayes {
     @Override
     public Prediction predict(String[] content) {
         return null;
+    }
+
+    private void insertAlpha(Set<String> first, Set<String> second, Map<String, Double> probabilities) {
+        first.removeAll(second);
+        first.forEach(key -> probabilities.putIfAbsent(key, ALPHA));
     }
 
     private Map<String, Double> calculateProbabilities(String[][] wordsInFiles) {
