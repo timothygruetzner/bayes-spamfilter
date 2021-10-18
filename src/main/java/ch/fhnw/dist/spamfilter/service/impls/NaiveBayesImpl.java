@@ -50,11 +50,11 @@ public class NaiveBayesImpl implements NaiveBayes {
     }
 
     private double calculateProbability(String[] words, Map<String, Double> probabilityOfWord) {
-        return 1 / (1 + Math.pow(Math.E, Arrays.stream(words)
+        return Arrays.stream(words)
                 .filter(probabilityOfWord::containsKey)
                 .map(probabilityOfWord::get)
                 .map(probability -> Math.log(1 - probability) - Math.log(probability))
-                .reduce(0.0, Double::sum)));
+                .reduce(0.0, Double::sum);
     }
 
     private Map<String, Double> calculateProbabilities(String[][] wordsInFiles) {
