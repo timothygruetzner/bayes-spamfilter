@@ -11,8 +11,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class NaiveBayesImpl implements NaiveBayes {
-    public final static double ALPHA = 0.00001;
-    public final static double THRESHOLD = 0.0001;
+    public final static double ALPHA = 0.000001;
+    public final static double THRESHOLD = 0.1;
     public final static double BIAS = 0.5;
 
     Map<String, Double> spamProbabilities = new HashMap<>();
@@ -37,9 +37,6 @@ public class NaiveBayesImpl implements NaiveBayes {
         double probabilityOfSpam = calculateProbability(content, spamProbabilities) * BIAS;
         double probabilityOfHam = calculateProbability(content, hamProbabilities) * (1 - BIAS);
 
-        System.out.println(probabilityOfSpam);
-        System.out.println(probabilityOfHam);
-
         if (Math.abs(probabilityOfSpam - probabilityOfHam) > THRESHOLD) {
             return new Prediction(Prediction.PredictionType.SPAM, probabilityOfSpam);
         } else {
@@ -57,7 +54,7 @@ public class NaiveBayesImpl implements NaiveBayes {
                 .filter(probabilityOfWord::containsKey)
                 .map(probabilityOfWord::get)
                 .map(probability -> Math.log(1 - probability) - Math.log(probability))
-                .reduce(1.0, (accumulated, current) -> accumulated * current)));
+                .reduce(0.0, Double::sum)));
     }
 
     private Map<String, Double> calculateProbabilities(String[][] wordsInFiles) {
