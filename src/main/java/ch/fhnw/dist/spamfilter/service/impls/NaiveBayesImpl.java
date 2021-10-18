@@ -11,7 +11,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class NaiveBayesImpl implements NaiveBayes {
-    public final static double ALPHA = 0.000001;
+    public final static double ALPHA = 0.001;
     public final static double THRESHOLD = 0.1;
     public final static double BIAS = 0.5;
 
@@ -35,7 +35,6 @@ public class NaiveBayesImpl implements NaiveBayes {
     @Override
     public Prediction predict(String[] content) {
         double probabilityOfSpam = calculateProbability(content) * BIAS;
-        System.out.println(probabilityOfSpam);
 
         if (probabilityOfSpam > THRESHOLD) {
             return new Prediction(Prediction.PredictionType.SPAM, probabilityOfSpam);
@@ -50,7 +49,7 @@ public class NaiveBayesImpl implements NaiveBayes {
     }
 
     private double calculateProbability(String[] words) {
-        return 1 / (1 + Math.exp(Arrays.stream(words)
+        Double summed = Arrays.stream(words)
                 .filter(word -> spamProbabilities.containsKey(word) && hamProbabilities.containsKey(word))
                 .map(word -> {
                     Double spamProbability = spamProbabilities.get(word);
@@ -58,18 +57,19 @@ public class NaiveBayesImpl implements NaiveBayes {
 
                     return Math.log(hamProbability) - Math.log(spamProbability);
                 })
-                .reduce(0.0, Double::sum)));
+                .reduce(0.0, Double::sum);
+        return 1 / (1 + Math.exp(summed));
     }
 
     private Map<String, Double> calculateProbabilities(String[][] wordsInFiles) {
+        int nFiles = wordsInFiles.length;
         String[] words = Arrays.stream(wordsInFiles).flatMap(Arrays::stream).toArray(String[]::new);
-        int nWords = words.length;
 
         return Arrays.stream(words)
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
                 .entrySet()
                 .stream()
-                .map(entry -> Map.entry(entry.getKey(), entry.getValue().doubleValue() / nWords))
+                .map(entry -> Map.entry(entry.getKey(), entry.getValue().doubleValue() / nFiles))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }
