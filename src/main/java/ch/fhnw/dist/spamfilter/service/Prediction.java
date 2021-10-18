@@ -2,5 +2,12 @@ package ch.fhnw.dist.spamfilter.service;
 
 public interface Prediction {
     PredictionType getType();
-    double getPrediction();
+    double getProbability();
+
+    enum PredictionType {
+        SPAM,
+        HAM
+    }
 }
+
+
