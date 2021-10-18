@@ -6,7 +6,6 @@ import ch.fhnw.dist.spamfilter.service.Prediction;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
