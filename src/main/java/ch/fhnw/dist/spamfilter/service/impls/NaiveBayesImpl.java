@@ -34,13 +34,13 @@ public class NaiveBayesImpl implements NaiveBayes {
 
     @Override
     public Prediction predict(String[] content) {
-        double probabilityOfSpam = calculateProbability(content, spamProbabilities) * BIAS;
-        double probabilityOfHam = calculateProbability(content, hamProbabilities) * (1 - BIAS);
+        double probabilityOfSpam = calculateProbability(content) * BIAS;
+        System.out.println(probabilityOfSpam);
 
-        if (Math.abs(probabilityOfSpam - probabilityOfHam) > THRESHOLD) {
+        if (probabilityOfSpam > THRESHOLD) {
             return new Prediction(Prediction.PredictionType.SPAM, probabilityOfSpam);
         } else {
-            return new Prediction(Prediction.PredictionType.HAM, probabilityOfHam);
+            return new Prediction(Prediction.PredictionType.HAM, probabilityOfSpam);
         }
     }
 
@@ -49,12 +49,16 @@ public class NaiveBayesImpl implements NaiveBayes {
         lookupSet.forEach(key -> probabilitiesMap.put(key, ALPHA));
     }
 
-    private double calculateProbability(String[] words, Map<String, Double> probabilityOfWord) {
-        return Arrays.stream(words)
-                .filter(probabilityOfWord::containsKey)
-                .map(probabilityOfWord::get)
-                .map(probability -> Math.log(1 - probability) - Math.log(probability))
-                .reduce(0.0, Double::sum);
+    private double calculateProbability(String[] words) {
+        return 1 / (1 + Math.exp(Arrays.stream(words)
+                .filter(word -> spamProbabilities.containsKey(word) && hamProbabilities.containsKey(word))
+                .map(word -> {
+                    Double spamProbability = spamProbabilities.get(word);
+                    Double hamProbability = hamProbabilities.get(word);
+
+                    return Math.log(hamProbability) - Math.log(spamProbability);
+                })
+                .reduce(0.0, Double::sum)));
     }
 
     private Map<String, Double> calculateProbabilities(String[][] wordsInFiles) {
