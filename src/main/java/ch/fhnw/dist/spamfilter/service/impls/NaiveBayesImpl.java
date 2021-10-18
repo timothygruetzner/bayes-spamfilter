@@ -6,12 +6,14 @@ import ch.fhnw.dist.spamfilter.service.Prediction;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class NaiveBayesImpl implements NaiveBayes {
-    public final static double ALPHA = 0.01;
-    public final static double THRESHOLD = 0.1;
+    public final static double ALPHA = 1;
+    public final static double THRESHOLD = 0.00001;
+    public final static double BIAS = 0.5;
 
     Map<String, Double> spamProbabilities = new HashMap<>();
     Map<String, Double> hamProbabilities = new HashMap<>();
@@ -20,6 +22,9 @@ public class NaiveBayesImpl implements NaiveBayes {
     public void train(String[][] spamTrainingSet, String[][] hamTrainingSet) {
         spamProbabilities = calculateProbabilities(spamTrainingSet);
         hamProbabilities = calculateProbabilities(hamTrainingSet);
+
+        insertNonExistent(spamProbabilities.keySet(), hamProbabilities.keySet(), hamProbabilities);
+        insertNonExistent(hamProbabilities.keySet(), spamProbabilities.keySet(), spamProbabilities);
     }
 
     @Override
@@ -29,8 +34,11 @@ public class NaiveBayesImpl implements NaiveBayes {
 
     @Override
     public Prediction predict(String[] content) {
-        double probabilityOfSpam = calculateProbability(content, spamProbabilities);
-        double probabilityOfHam = calculateProbability(content, hamProbabilities);
+        double probabilityOfSpam = calculateProbability(content, spamProbabilities) * BIAS;
+        double probabilityOfHam = calculateProbability(content, hamProbabilities) * (1 - BIAS);
+
+        System.out.println(probabilityOfSpam);
+        System.out.println(probabilityOfHam);
 
         double spam = probabilityOfSpam / (probabilityOfSpam + probabilityOfHam);
         double ham = probabilityOfHam / (probabilityOfHam + probabilityOfSpam);
@@ -42,9 +50,17 @@ public class NaiveBayesImpl implements NaiveBayes {
         }
     }
 
+    private void insertNonExistent(Set<String> lookupSet, Set<String> intersectionSet, Map<String, Double> probabilitiesMap) {
+        lookupSet.removeAll(intersectionSet);
+        lookupSet.forEach(key -> probabilitiesMap.put(key, ALPHA));
+    }
+
     private double calculateProbability(String[] words, Map<String, Double> probabilityOfWord) {
-        return Arrays.stream(words).map(word -> probabilityOfWord.getOrDefault(word, ALPHA))
-                .reduce(1.0, (accumulated, current) -> accumulated * current);
+        return 1 / (1 + Math.pow(Math.E, Arrays.stream(words)
+                .filter(probabilityOfWord::containsKey)
+                .map(probabilityOfWord::get)
+                .map(probability -> Math.log(1 - probability) - Math.log(probability))
+                .reduce(1.0, (accumulated, current) -> accumulated * current)));
     }
 
     private Map<String, Double> calculateProbabilities(String[][] wordsInFiles) {
