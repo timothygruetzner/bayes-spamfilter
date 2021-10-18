@@ -2,6 +2,7 @@ package ch.fhnw.dist.spamfilter;
 
 import ch.fhnw.dist.spamfilter.service.NaiveBayes;
 import ch.fhnw.dist.spamfilter.service.Parser;
+import ch.fhnw.dist.spamfilter.service.impls.NaiveBayesImpl;
 import ch.fhnw.dist.spamfilter.service.impls.WordParser;
 
 import java.io.IOException;
@@ -23,7 +24,7 @@ public class Main {
 
     public Main() {
         this.wordParser = new WordParser();
-        this.bayesImpl = null;
+        this.bayesImpl = new NaiveBayesImpl();
     }
 
     public void run() throws IOException {
