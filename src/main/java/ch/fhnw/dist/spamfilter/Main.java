@@ -40,7 +40,7 @@ public class Main {
         System.out.println();
 
         System.out.println("Using Configuration:");
-        System.out.printf("Alpha:                         %f%n", NaiveBayesImpl.α);
+        System.out.printf("Alpha:                         %f%n", NaiveBayesImpl.ALPHA);
         System.out.printf("Spam Threshold (|P(H) - P(S)|: %f%n", NaiveBayesImpl.THRESHOLD);
         System.out.println();
 
