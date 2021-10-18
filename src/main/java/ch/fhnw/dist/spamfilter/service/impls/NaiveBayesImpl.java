@@ -21,9 +21,6 @@ public class NaiveBayesImpl implements NaiveBayes {
     public void train(String[][] spamTrainingSet, String[][] hamTrainingSet) {
         spamProbabilities = calculateProbabilities(spamTrainingSet);
         hamProbabilities = calculateProbabilities(hamTrainingSet);
-
-        insertAlpha(spamProbabilities.keySet(), hamProbabilities.keySet(), hamProbabilities);
-        insertAlpha(hamProbabilities.keySet(), spamProbabilities.keySet(), spamProbabilities);
     }
 
     @Override
@@ -33,13 +30,22 @@ public class NaiveBayesImpl implements NaiveBayes {
 
     @Override
     public Prediction predict(String[] content) {
+        double probabilityOfSpam = calculateProbability(content, spamProbabilities);
+        double probabilityOfHam = calculateProbability(content, hamProbabilities);
 
-        return null;
+        double spam = probabilityOfSpam / (probabilityOfSpam + probabilityOfHam);
+        double ham = probabilityOfHam / (probabilityOfHam + probabilityOfSpam);
+
+        if (Math.abs(spam - ham) > THRESHOLD) {
+            return new Prediction(Prediction.PredictionType.SPAM, spam);
+        } else {
+            return new Prediction(Prediction.PredictionType.HAM, ham);
+        }
     }
 
-    private void insertAlpha(Set<String> first, Set<String> second, Map<String, Double> probabilities) {
-        first.removeAll(second);
-        first.forEach(key -> probabilities.putIfAbsent(key, ALPHA));
+    private double calculateProbability(String[] words, Map<String, Double> probabilityOfWord) {
+        return Arrays.stream(words).map(word -> probabilityOfWord.getOrDefault(word, ALPHA))
+                .reduce(1.0, (accumulated, current) -> accumulated * current);
     }
 
     private Map<String, Double> calculateProbabilities(String[][] wordsInFiles) {
