@@ -38,9 +38,9 @@ public class Main {
         System.out.println("*****************************************************************");
         System.out.println();
 
-        System.out.println("Using Configuration:");
-        System.out.printf("Alpha:                         %f%n", NaiveBayesImpl.ALPHA);
-        System.out.printf("Spam Threshold (|P(H) - P(S)|: %f%n", NaiveBayesImpl.THRESHOLD);
+        System.out.println("RUN CONFIGURATION:");
+        System.out.printf("- Alpha:                          %f%n", NaiveBayesImpl.ALPHA);
+        System.out.printf("- Spam Threshold (|P(H) - P(S)|): %f%n", NaiveBayesImpl.THRESHOLD);
         System.out.println();
 
         String[][] spamTrainingSet = getZipContents(SPAM_TRAINING_SET).toArray(new String[0][0]);
