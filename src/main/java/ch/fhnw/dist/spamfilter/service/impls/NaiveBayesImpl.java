@@ -11,8 +11,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class NaiveBayesImpl implements NaiveBayes {
-    private final static double ALPHA = 0.01;
-    private final static double THRESHOLD = 0.1;
+    public final static double ALPHA = 0.01;
+    public final static double THRESHOLD = 0.1;
 
     Map<String, Double> spamProbabilities = new HashMap<>();
     Map<String, Double> hamProbabilities = new HashMap<>();
