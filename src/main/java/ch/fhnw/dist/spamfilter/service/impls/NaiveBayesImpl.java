@@ -3,28 +3,29 @@ package ch.fhnw.dist.spamfilter.service.impls;
 import ch.fhnw.dist.spamfilter.service.NaiveBayes;
 import ch.fhnw.dist.spamfilter.service.Prediction;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class NaiveBayesImpl implements NaiveBayes {
-    public final static double ALPHA = 0.001;
-    public final static double THRESHOLD = 0.1;
+    public final static double ALPHA = 1;
+    public final static double THRESHOLD = 1;
     public final static double BIAS = 0.5;
 
-    Map<String, Double> spamProbabilities = new HashMap<>();
-    Map<String, Double> hamProbabilities = new HashMap<>();
+    Map<String, Double> spamWordCountPerMail = new HashMap<>();
+    Map<String, Double> hamWordCountPerMail = new HashMap<>();
+
+    private int nSpamMails = 0;
+    private int nHamMails = 0;
 
     @Override
-    public void train(String[][] spamTrainingSet, String[][] hamTrainingSet) {
-        spamProbabilities = calculateProbabilities(spamTrainingSet);
-        hamProbabilities = calculateProbabilities(hamTrainingSet);
+    public void trainMany(String[][] spamTrainingSet, String[][] hamTrainingSet) {
+        for (String[] words : spamTrainingSet) {
+            train(words, Prediction.PredictionType.SPAM);
+        }
 
-        insertNonExistent(spamProbabilities.keySet(), hamProbabilities.keySet(), hamProbabilities);
-        insertNonExistent(hamProbabilities.keySet(), spamProbabilities.keySet(), spamProbabilities);
+        for (String[] words : hamTrainingSet) {
+            train(words, Prediction.PredictionType.HAM);
+        }
     }
 
     @Override
@@ -34,42 +35,51 @@ public class NaiveBayesImpl implements NaiveBayes {
 
     @Override
     public Prediction predict(String[] content) {
-        double probabilityOfSpam = calculateProbability(content) * BIAS;
+        double probabilityOfSpam = calculateProbability(content);
 
-        if (probabilityOfSpam > THRESHOLD) {
+        if (probabilityOfSpam >= THRESHOLD) {
             return new Prediction(Prediction.PredictionType.SPAM, probabilityOfSpam);
         } else {
             return new Prediction(Prediction.PredictionType.HAM, probabilityOfSpam);
         }
     }
 
-    private void insertNonExistent(Set<String> lookupSet, Set<String> intersectionSet, Map<String, Double> probabilitiesMap) {
-        lookupSet.removeAll(intersectionSet);
-        lookupSet.forEach(key -> probabilitiesMap.put(key, ALPHA));
+    @Override
+    public void train(String[] words, Prediction.PredictionType type) {
+        Map<String, Double> wordCountMap = getMap(type);
+        Set<String> uniqueWords = Arrays.stream(words).collect(Collectors.toSet());
+        uniqueWords.forEach(word -> wordCountMap.compute(word, (ignore, value) -> Optional.ofNullable(value).orElse(0.0) + 1.0));
+        increaseMailCount(type);
+    }
+
+    private void increaseMailCount(Prediction.PredictionType type) {
+        if (type == Prediction.PredictionType.SPAM) {
+            nSpamMails += 1;
+        } else {
+            nHamMails += 1;
+        }
+    }
+
+    private Map<String, Double> getMap(Prediction.PredictionType type) {
+        if (type == Prediction.PredictionType.SPAM) {
+            return spamWordCountPerMail;
+        } else {
+            return hamWordCountPerMail;
+        }
     }
 
     private double calculateProbability(String[] words) {
         Double summed = Arrays.stream(words)
-                .filter(word -> spamProbabilities.containsKey(word) && hamProbabilities.containsKey(word))
+                .filter(word -> spamWordCountPerMail.containsKey(word) && hamWordCountPerMail.containsKey(word))
                 .map(word -> {
-                    Double spamProbability = spamProbabilities.get(word);
-                    Double hamProbability = hamProbabilities.get(word);
+                    double nSpam = spamWordCountPerMail.getOrDefault(word, ALPHA);
+                    double nHam = hamWordCountPerMail.getOrDefault(word, ALPHA);
+                    double spamProbability = nSpam / nSpamMails;
+                    double hamProbability = nHam / nHamMails;
 
                     return Math.log(hamProbability) - Math.log(spamProbability);
                 })
                 .reduce(0.0, Double::sum);
         return 1 / (1 + Math.exp(summed));
-    }
-
-    private Map<String, Double> calculateProbabilities(String[][] wordsInFiles) {
-        int nFiles = wordsInFiles.length;
-        String[] words = Arrays.stream(wordsInFiles).flatMap(Arrays::stream).toArray(String[]::new);
-
-        return Arrays.stream(words)
-                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
-                .entrySet()
-                .stream()
-                .map(entry -> Map.entry(entry.getKey(), entry.getValue().doubleValue() / nFiles))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

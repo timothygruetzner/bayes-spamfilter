@@ -46,7 +46,7 @@ public class Main {
         String[][] spamTrainingSet = getZipContents(SPAM_TRAINING_SET).toArray(new String[0][0]);
         String[][] hamTrainingSet = getZipContents(HAM_TRAINING_SET).toArray(new String[0][0]);
 
-        this.bayesImpl.train(spamTrainingSet, hamTrainingSet);
+        this.bayesImpl.trainMany(spamTrainingSet, hamTrainingSet);
         System.out.printf("Trained with %d spam emails and %d ham emails%n%n", spamTrainingSet.length, hamTrainingSet.length);
 
         List<String[]> hamTestfiles = getZipContents(HAM_TEST_SET);
