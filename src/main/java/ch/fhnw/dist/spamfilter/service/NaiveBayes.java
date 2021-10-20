@@ -5,7 +5,5 @@ public interface NaiveBayes {
 
     void train(String[] words, Prediction.PredictionType type);
 
-    void reinforce(String[][] spamReinforceSet, String[][] hamReinforceSet);
-
     Prediction predict(String[] content);
 }
