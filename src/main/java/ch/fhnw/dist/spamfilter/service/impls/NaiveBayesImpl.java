@@ -31,7 +31,6 @@ public class NaiveBayesImpl implements NaiveBayes {
     @Override
     public Prediction predict(String[] content) {
         double probabilityOfSpam = calculateProbability(content);
-        System.out.println(probabilityOfSpam);
         if (probabilityOfSpam >= THRESHOLD) {
             return new Prediction(Prediction.PredictionType.SPAM, probabilityOfSpam);
         } else {
