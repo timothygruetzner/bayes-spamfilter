@@ -16,9 +16,9 @@ import java.util.zip.ZipFile;
 
 public class Main {
     public static final String HAM_TRAINING_SET = "ham-anlern.zip";
-    public static final String HAM_CALIBRATE_SET = "ham-kalibrierung.zip";
+    public static final String HAM_CALIBRATE_SET = "ham-kaLlibrierung.zip";
     public static final String SPAM_TRAINING_SET = "spam-anlern.zip";
-    public static final String SPAM_CALIBRATE_SET = "spam-kalibrierung.zip";
+    public static final String SPAM_CALIBRATE_SET = "spam-kaLlibrierung.zip";
     public static final String HAM_TEST_SET = "ham-test.zip";
     public static final String SPAM_TEST_SET = "spam-test.zip";
 
